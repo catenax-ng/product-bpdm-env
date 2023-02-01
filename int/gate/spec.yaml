@@ -9,7 +9,9 @@ source:
       - name: AVP_SECRET
         value: vault-secret
       - name: helm_args
-        value: '-f values-int.yaml'
+        value: >-
+          -f
+          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/int/gate/values.yaml
 destination:
   server: 'https://kubernetes.default.svc'
   namespace: product-bpdm

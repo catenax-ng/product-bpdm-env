@@ -10,7 +10,7 @@ source:
       - name: helm_args
         value: >-
           -f
-          https://raw.githubusercontent.com/eclipse-tractusx/bpdm/daccb9cff3a9bbca37bc6f4b9fc73894719d577c/charts/pool/values-beta.yaml
+          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/beta/pool/values.yaml
   chart: bpdm-pool
 destination:
   server: 'https://kubernetes.default.svc'
