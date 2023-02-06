@@ -42,3 +42,6 @@ postgres:
   auth:
     postgresPassword: <path:bpdm/data/pen-dev/pool/postgresql#postgres-password>
     password: <path:bpdm/data/pen-dev/pool/postgresql#password>
+
+opensearch:
+  fullnameOverride: pool-pen-opensearch

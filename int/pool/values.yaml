@@ -48,3 +48,6 @@ postgres:
   auth:
     postgresPassword: <path:bpdm/data/int/pool/postgresql#postgres-password>
     password: <path:bpdm/data/int/pool/postgresql#password>
+
+opensearch:
+  fullnameOverride: pool-int-opensearch
