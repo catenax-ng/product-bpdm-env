@@ -53,4 +53,5 @@ postgres:
     password: <path:bpdm/data/dev/pool/postgresql#password>
 
 opensearch:
-  fullnameOverride: pool-dev-opensearch
+  masterService: ""
+  nameOverride: bpdm-pool-dev-opensearch

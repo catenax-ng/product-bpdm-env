@@ -1,6 +1,6 @@
 project: project-bpdm
 source:
-  repoURL: 'https://github.com/catenax-ng/product-bpdm.git'
+  repoURL: 'https://github.com/eclipse-tractusx/bpdm.git'
   path: charts/pool
   targetRevision: main
   plugin:
@@ -9,9 +9,7 @@ source:
       - name: AVP_SECRET
         value: vault-secret
       - name: helm_args
-        value: >-
-          -f
-          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/dev/pool/values.yaml
+        value: '-f https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/dev/pool/values.yaml'
 destination:
   server: 'https://kubernetes.default.svc'
   namespace: product-bpdm
