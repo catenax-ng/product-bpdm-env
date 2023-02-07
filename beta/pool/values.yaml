@@ -44,4 +44,5 @@ postgres:
     password: <path:bpdm/data/beta/pool/postgresql#password>
 
 opensearch:
-  fullnameOverride: pool-beta-opensearch
+  masterService: ""
+  fullnameOverride: bpdm-pool-beta-opensearch
