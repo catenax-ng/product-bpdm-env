@@ -54,4 +54,4 @@ postgres:
 
 opensearch:
   masterService: ""
-  nameOverride: bpdm-pool-dev-opensearch
+  fullnameOverride: bpdm-pool-dev-opensearch

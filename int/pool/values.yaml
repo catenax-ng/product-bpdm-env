@@ -50,4 +50,5 @@ postgres:
     password: <path:bpdm/data/int/pool/postgresql#password>
 
 opensearch:
-  fullnameOverride: pool-int-opensearch
+  masterService: ""
+  fullnameOverride: bpdm-pool-int-opensearch
