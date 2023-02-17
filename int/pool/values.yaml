@@ -1,6 +1,6 @@
 springProfiles:
   - auth
-  - cdq
+  - saas
 
 ingress:
   enabled: true
@@ -19,7 +19,8 @@ ingress:
 
 applicationConfig:
   bpdm:
-    cdq:
+    saas:
+      host: https://api.cdq.com
       # every hour at minute 0
       import-scheduler-cron-expr: 0 0 * * * *
       storage: af3e668806c1360498774117b6180772
@@ -41,7 +42,7 @@ applicationSecrets:
     datasource:
       password: <path:bpdm/data/int/pool/postgresql#password>
   bpdm:
-    cdq:
+    saas:
       api-key: <path:bpdm/data/int/pool/cdq#api-key>
 
 postgres:
