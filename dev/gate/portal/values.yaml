@@ -20,14 +20,26 @@ ingress:
 applicationConfig:
   bpdm:
     pool:
-      base-url: http://pool-bpdm:8080/api/catena
-    cdq:
+      base-url: https://partners-pool.int.demo.catena-x.net/api/catena
+    saas:
+      host: https://api.cdq.com
       storage: b3c0ad440d67350ba6f89a031375ec6b
       datasource: 62ce5d4c9f1e1e3886fdd720
     security:
       auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
       realm: CX-Central
       client-id: Cl16-CX-BPDMGate-Portal
+  spring:
+    security:
+      oauth2:
+        client:
+          registration:
+            gate-client:
+              # Client ID used for getting token different from own Client to validate tokens
+              client-id: sa-cl16-cx-1
+          provider:
+            catena-keycloak-provider:
+              issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
   springdoc:
     swagger-ui:
       oauth:
@@ -35,7 +47,7 @@ applicationConfig:
 
 applicationSecrets:
   bpdm:
-    cdq:
+    saas:
       api-key: <path:bpdm/data/dev/portal-gate/cdq#api-key>
     security:
       credentials:
