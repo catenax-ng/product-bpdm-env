@@ -15,10 +15,18 @@ ingress:
         - partners-gate.int.demo.catena-x.net
 
 applicationConfig:
+  logging:
+    level:
+      org:
+        eclipse:
+          tractusx:
+            bpdm:
+              DEBUG
   bpdm:
     pool:
-      base-url: http://poolv2-bpdm:8080/api/catena
-    cdq:
+      base-url: http://bpdm-pool:8080/api/catena
+    saas:
+      host: https://api.cdq.com
       storage: 38d2277e20c730b4b8e8f182adcef7ca
       datasource: 621338451197b7667a5fbda4
     security:
@@ -33,10 +41,14 @@ applicationConfig:
             gate-client:
               # Client ID used for getting token different from own Client to validate tokens
               client-id: sa-cl16-cx-1
+  springdoc:
+    swagger-ui:
+      oauth:
+        client-id: Cl2-CX-Portal
 
 applicationSecrets:
   bpdm:
-    cdq:
+    saas:
       api-key: <path:bpdm/data/int/gate/cdq#api-key>
     security:
       credentials:
