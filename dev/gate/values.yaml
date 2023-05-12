@@ -47,9 +47,17 @@ applicationConfig:
         client-id: Cl2-CX-Portal
 
 applicationSecrets:
+  spring:
+    datasource:
+      password: <path:bpdm/data/dev/pool/postgresql#password>
   bpdm:
     saas:
       api-key: <path:bpdm/data/dev/gate/cdq#api-key>
     security:
       credentials:
         secret: <path:bpdm/data/dev/gate/service-account#client-secret>
+
+postgres:
+  auth:
+    postgresPassword: <path:bpdm/data/dev/pool/postgresql#postgres-password>
+    password: <path:bpdm/data/dev/pool/postgresql#password>
