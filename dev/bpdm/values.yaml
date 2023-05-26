@@ -114,6 +114,13 @@ bpdm-bridge-dummy:
       - secretName: tls-secret
         hosts:
           - partners-bridge.dev.demo.catena-x.net
+  resources:
+    limits:
+      cpu: 500m
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 2Gi
   applicationConfig:
     bpdm:
       security:
