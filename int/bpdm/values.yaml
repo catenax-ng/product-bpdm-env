@@ -37,6 +37,11 @@ bpdm-gate:
       servlet:
         context-path: "/companies/test-company"
     bpdm:
+      gate-security:
+        readCompanyInputData: view_company_data
+        changeCompanyInputData: add_company_data
+        readCompanyOutputData: view_company_data
+        changeCompanyOutputData: add_company_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
@@ -164,6 +169,8 @@ bpdm-bridge-dummy:
       servlet:
         context-path: "/bridge"
     bpdm:
+      bridge:
+        syncAuthorities: add_company_data
       pool:
         base-url: "http://bpdm-int-pool:8080/pool"
       gate:
