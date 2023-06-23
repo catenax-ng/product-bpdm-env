@@ -1,8 +1,9 @@
 bpdm-gate:
-  enabled: true
-  replicaCount: 1
   image:
     tag: "main"
+  fullnameOverride: bpdm-dev-gate-test-company
+  enabled: true
+  replicaCount: 1
   resources:
     limits:
       cpu: 800m
@@ -12,39 +13,40 @@ bpdm-gate:
       memory: 2Gi
   springProfiles:
     - auth
-    - pool-auth
   ingress:
     enabled: true
     hosts:
-      - host: partners-gate.dev.demo.catena-x.net
+      - host: business-partners.dev.demo.catena-x.net
         paths:
-          - path: /
+          - path: "/companies/test-company"
             pathType: Prefix
     tls:
       - secretName: tls-secret
         hosts:
-          - partners-gate.dev.demo.catena-x.net
+          - business-partners.dev.demo.catena-x.net
+  livenessProbe:
+    httpGet:
+      path: "/companies/test-company/actuator/health/liveness"
+  readinessProbe:
+    httpGet:
+      path: "/companies/test-company/actuator/health/readiness"
+  startupProbe:
+    httpGet:
+      path: "/companies/test-company/actuator/health/readiness"
   applicationConfig:
+    server:
+      servlet:
+        context-path: "/companies/test-company"
     bpdm:
-      saas:
-        host: https://api.cdq.com
-        storage: 38d2277e20c730b4b8e8f182adcef7ca
-        datasource: 621338451197b7667a5fbda4
+      gate-security:
+        readCompanyInputData: view_company_data
+        changeCompanyInputData: add_company_data
+        readCompanyOutputData: view_company_data
+        changeCompanyOutputData: add_company_data
       security:
-        auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
+        auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
-        client-id: Cl16-CX-BPDMGate
-    spring:
-      security:
-        oauth2:
-          client:
-            registration:
-              gate-client:
-                # Client ID used for getting token different from own Client to validate tokens
-                client-id: sa-cl7-cx-7
-            provider:
-              catena-keycloak-provider:
-                issuer-uri: https://centralidp.dev.demo.catena-x.net/auth/realms/CX-Central
+        client-id: Cl7-CX-BPDM
     springdoc:
       swagger-ui:
         oauth:
@@ -54,8 +56,6 @@ bpdm-gate:
       datasource:
         password: <path:bpdm/data/dev/pool/postgresql#password>
     bpdm:
-      saas:
-        api-key: <path:bpdm/data/dev/gate/cdq#api-key>
       security:
         credentials:
           secret: <path:bpdm/data/dev/pool/admin-user#client-secret>
@@ -63,9 +63,10 @@ bpdm-gate:
     enabled: false
 
 bpdm-pool:
-  enabled: true
   image:
     tag: "main"
+  fullnameOverride: bpdm-dev-pool
+  enabled: true
   springProfiles:
     - auth
   resources:
@@ -81,15 +82,27 @@ bpdm-pool:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     hosts:
-      - host: partners-pool.dev.demo.catena-x.net
+      - host: business-partners.dev.demo.catena-x.net
         paths:
-          - path: /
+          - path: /pool
             pathType: Prefix
     tls:
       - secretName: tls-secret
         hosts:
-          - partners-pool.dev.demo.catena-x.net
+          - business-partners.dev.demo.catena-x.net
+  livenessProbe:
+    httpGet:
+      path: "/pool/actuator/health/liveness"
+  readinessProbe:
+    httpGet:
+      path: "/pool/actuator/health/readiness"
+  startupProbe:
+    httpGet:
+      path: "/pool/actuator/health/readiness"
   applicationConfig:
+    server:
+      servlet:
+        context-path: "/pool"
     bpdm:
       opensearch:
         # every hour at minute 30
@@ -107,11 +120,12 @@ bpdm-pool:
       datasource:
         password: <path:bpdm/data/dev/pool/postgresql#password>
   opensearch:
-    fullnameOverride: "bpdm-umbrella-opensearch"
+    fullnameOverride: "bpdm-dev-opensearch"
 
 bpdm-bridge-dummy:
   image:
     tag: "main"
+  fullnameOverride: bpdm-dev-bridge
   springProfiles:
     - auth
   ingress:
@@ -120,14 +134,23 @@ bpdm-bridge-dummy:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     hosts:
-      - host: partners-bridge.dev.demo.catena-x.net
+      - host: business-partners.dev.demo.catena-x.net
         paths:
-          - path: /
+          - path: /bridge
             pathType: Prefix
     tls:
       - secretName: tls-secret
         hosts:
-          - partners-bridge.dev.demo.catena-x.net
+          - business-partners.dev.demo.catena-x.net
+  livenessProbe:
+    httpGet:
+      path: "/bridge/actuator/health/liveness"
+  readinessProbe:
+    httpGet:
+      path: "/bridge/actuator/health/readiness"
+  startupProbe:
+    httpGet:
+      path: "/bridge/actuator/health/readiness"
   resources:
     limits:
       cpu: 800m
@@ -136,7 +159,16 @@ bpdm-bridge-dummy:
       cpu: 300m
       memory: 2Gi
   applicationConfig:
+    server:
+      servlet:
+        context-path: "/bridge"
     bpdm:
+      bridge:
+        syncAuthorities: add_company_data
+      pool:
+        base-url: "http://bpdm-dev-pool:8080/pool"
+      gate:
+        base-url: "http://bpdm-dev-gate-test-company:8080/companies/test-company"
       security:
         auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
         realm: CX-Central
@@ -163,7 +195,7 @@ bpdm-bridge-dummy:
 
 opensearch:
   masterService: ""
-  fullnameOverride: "bpdm-umbrella-opensearch"
+  fullnameOverride: "bpdm-dev-opensearch"
   enabled: true
   replicas: 1
   protocol: http
