@@ -44,7 +44,7 @@ bpdm-gate:
         readCompanyOutputData: view_company_data
         changeCompanyOutputData: add_company_data
       security:
-        auth-server-url: https://centralidp.int.demo.catena-x.net/auth
+        auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl7-CX-BPDM
     springdoc:
@@ -104,6 +104,12 @@ bpdm-pool:
       servlet:
         context-path: "/pool"
     bpdm:
+      pool-security:
+        readPoolPartnerData: view_company_data
+        changePoolPartnerData: add_company_data
+        readMetaData: view_company_data
+        changeMetaData: add_company_data
+        manageOpensearch: add_company_data
       opensearch:
         # every hour at minute 30
         export-scheduler-cron-expr: 0 30 * * * *
