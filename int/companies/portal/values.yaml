@@ -39,13 +39,13 @@ bpdm-gate:
     bpdm:
       gate-security:
         readCompanyInputData: view_company_data
-        changeCompanyInputData: view_company_data
+        changeCompanyInputData: change_company_data
         readCompanyOutputData: view_shared_data
         changeCompanyOutputData: change_company_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
-        client-id: Cl16-CX-BPDMGate
+        client-id: Cl16-CX-BPDMGate-Portal
     springdoc:
       swagger-ui:
         oauth:
@@ -105,7 +105,7 @@ bpdm-bridge-dummy:
         base-url: "http://bpdm-int-pool:8080/pool"
         oauth2-client-registration: bridge-pool-client
       gate:
-        base-url: "http://bpdm-int-gate-portal:8080/companies/portal/bridge"
+        base-url: "http://bpdm-int-gate-portal:8080/companies/portal/gate"
         oauth2-client-registration: bridge-gate-client
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
