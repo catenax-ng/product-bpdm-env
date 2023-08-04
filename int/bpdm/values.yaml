@@ -38,14 +38,14 @@ bpdm-gate:
         context-path: "/companies/test-company"
     bpdm:
       gate-security:
+        changeCompanyInputData: update_company_data
+        changeCompanyOutputData: update_company_data
         readCompanyInputData: view_company_data
-        changeCompanyInputData: add_company_data
-        readCompanyOutputData: view_company_data
-        changeCompanyOutputData: add_company_data
+        readCompanyOutputData: view_shared_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
-        client-id: Cl7-CX-BPDM
+        client-id: Cl16-CX-BPDMGate
     spring:
       security:
         oauth2:
