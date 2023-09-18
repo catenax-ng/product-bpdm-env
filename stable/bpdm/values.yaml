@@ -44,17 +44,6 @@ bpdm-gate:
         auth-server-url: https://centralidp.stable.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl16-CX-BPDMGate
-    spring:
-      security:
-        oauth2:
-          client:
-            registration:
-              gate-client:
-                # Client ID used for getting token different from own Client to validate tokens
-                client-id: sa-cl7-cx-7
-            provider:
-              catena-keycloak-provider:
-                issuer-uri: https://centralidp.stable.demo.catena-x.net/auth/realms/CX-Central
     springdoc:
       swagger-ui:
         oauth:
@@ -181,17 +170,6 @@ bpdm-bridge-dummy:
         auth-server-url: https://centralidp.stable.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl7-CX-BPDM
-    spring:
-      security:
-        oauth2:
-          client:
-            registration:
-              bridge-client:
-                # Client ID used for getting token different from own Client to validate tokens
-                client-id: sa-cl7-cx-7
-            provider:
-              catena-keycloak-provider:
-                issuer-uri: https://centralidp.stable.demo.catena-x.net/auth/realms/CX-Central
   applicationSecrets:
     spring:
       datasource:
