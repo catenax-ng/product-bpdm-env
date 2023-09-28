@@ -1,16 +1,15 @@
 project: project-bpdm
 source:
   repoURL: 'https://eclipse-tractusx.github.io/charts/dev'
-  targetRevision: 4.0.3
+  targetRevision: 4.3.0
   plugin:
-    name: argocd-vault-plugin-helm-args
     env:
       - name: AVP_SECRET
         value: vault-secret
       - name: helm_args
         value: >-
           -f
-          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/pen/pool/values.yaml
+          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/int/legacy/3-2-x/bpdm-pool/values.yaml
   chart: bpdm-pool
 destination:
   server: 'https://kubernetes.default.svc'

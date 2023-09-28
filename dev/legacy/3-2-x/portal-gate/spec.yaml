@@ -1,7 +1,7 @@
 project: project-bpdm
 source:
   repoURL: 'https://eclipse-tractusx.github.io/charts/dev'
-  targetRevision: 4.0.5-alpha.1
+  targetRevision: 3.3.0
   plugin:
     name: argocd-vault-plugin-helm-args
     env:
@@ -10,9 +10,8 @@ source:
       - name: helm_args
         value: >-
           -f
-          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/int/pool/values.yaml
-          --set image.tag=3.0.2-alpha.1
-  chart: bpdm-pool
+          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/dev/legacy/3-2-x/portal-gate/values.yaml
+  chart: bpdm-gate
 destination:
   server: 'https://kubernetes.default.svc'
   namespace: product-bpdm
