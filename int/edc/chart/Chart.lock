@@ -1,0 +1,12 @@
+dependencies:
+- name: tractusx-connector
+  repository: https://eclipse-tractusx.github.io/charts/dev
+  version: 0.4.1
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 11.9.1
+- name: opensearch
+  repository: https://opensearch-project.github.io/helm-charts/
+  version: 2.4.0
+digest: sha256:05ff12ca5883780079e110a21287cbdc49052d33d18437e7026e9b1c8f8c1394
+generated: "2023-06-01T15:42:00.386524+02:00"
