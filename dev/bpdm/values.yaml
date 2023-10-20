@@ -37,7 +37,11 @@ bpdm-gate:
     server:
       servlet:
         context-path: "/companies/test-company"
+    cleaningService:
+      pollingCron: "*/30 * * * * *"
     bpdm:
+      orchestrator:
+        base-url: "http://bpdm-dev-orchestrator:8080/"
       gate-security:
         readCompanyInputData: view_company_data
         changeCompanyInputData: add_company_data
@@ -104,6 +108,9 @@ bpdm-pool:
       servlet:
         context-path: "/pool"
     bpdm:
+      pool-orchestrator:
+        golden-record-scheduler-cron-expr: "*/30 * * * * *"
+        base-url: "http://bpdm-dev-orchestrator:8080/"
       pool-security:
         readPoolPartnerData: view_company_data
         changePoolPartnerData: add_company_data
@@ -198,6 +205,49 @@ bpdm-bridge-dummy:
       security:
         credentials:
           secret: <path:bpdm/data/dev/pool/admin-user#client-secret>
+
+bpdm-orchestrator:
+  image:
+    tag: "main"
+  fullnameOverride: bpdm-dev-orchestrator
+  enabled: true
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 800m
+      memory: 2Gi
+    requests:
+      cpu: 300m
+      memory: 2Gi
+  livenessProbe:
+    httpGet:
+      path: "/actuator/health/liveness"
+  readinessProbe:
+    httpGet:
+      path: "/actuator/health/readiness"
+  startupProbe:
+    httpGet:
+      path: "/actuator/health/readiness"
+
+bpdm-cleaning-service-dummy:
+  image:
+    tag: "main"
+  fullnameOverride: bpdm-dev-cleaning-service
+  enabled: true
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 800m
+      memory: 2Gi
+    requests:
+      cpu: 300m
+      memory: 2Gi
+  applicationConfig:
+    bpdm:
+      orchestrator:
+        base-url: "http://bpdm-dev-orchestrator:8080/"
+    cleaningService:
+      pollingCron: "*/30 * * * * *"
 
 opensearch:
   masterService: ""
