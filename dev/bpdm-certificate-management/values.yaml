@@ -1,0 +1,67 @@
+image:
+  tag: "main"
+enabled: true
+
+replicaCount: 1
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+springProfiles:
+  - auth
+
+ingress:
+  enabled: true
+  hosts:
+    - host: business-partners-certificate.dev.demo.catena-x.net
+      paths:
+        - path: "/test-certificate"
+          pathType: Prefix
+  tls:
+    - secretName: tls-secret
+      hosts:
+        - business-partners-certificate.dev.demo.catena-x.net
+
+livenessProbe:
+  httpGet:
+    path: "/test-certificate/actuator/health/liveness"
+readinessProbe:
+  httpGet:
+    path: "/test-certificate/actuator/health/readiness"
+startupProbe:
+  httpGet:
+    path: "/test-certificate/actuator/health/readiness"
+
+applicationConfig:
+  server:
+    servlet:
+      context-path: "/test-certificate"
+  bpdm-cert:
+    security:
+      auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
+      realm: CX-Central
+      client-id: sa55
+
+applicationSecrets:
+  spring:
+    datasource:
+      password: <path:bpdm/data/dev/bpdm-certificate-management/postgres#password>
+  bpdm-cert:
+    security:
+      credentials:
+        secret: <path:bpdm/data/dev/bpdm-certificate-management/client-secret#client-secret>
+
+postgres:
+  enabled: true
+  auth:
+    postgresPassword: <path:bpdm/data/dev/bpdm-certificate-management/postgres#postgres-password>
+    password: <path:bpdm/data/dev/bpdm-certificate-management/postgres#password>
+#  configmap:
+#    create: true
+#    data:
+#      bpdm-cert_security_auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
+#      bpdm-cert_security_realm: CX-Central
