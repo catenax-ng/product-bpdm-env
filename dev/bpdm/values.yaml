@@ -37,11 +37,14 @@ bpdm-gate:
     server:
       servlet:
         context-path: "/companies/test-company"
-    cleaningService:
-      pollingCron: "*/30 * * * * *"
     bpdm:
-      orchestrator:
-        base-url: "http://bpdm-dev-orchestrator:8080/"
+      cleaningService:
+        pollingCron: "*/30 * * * * *"
+      client:
+        orchestrator:
+          base-url: "http://bpdm-dev-orchestrator:8080/"
+        pool:
+          base-url: "http://bpdm-dev-pool:8080/"
       gate-security:
         readCompanyInputData: view_company_data
         changeCompanyInputData: add_company_data
@@ -109,17 +112,16 @@ bpdm-pool:
         context-path: "/pool"
     bpdm:
       pool-orchestrator:
-        golden-record-scheduler-cron-expr: "*/30 * * * * *"
         base-url: "http://bpdm-dev-orchestrator:8080/"
+      client:
+        pool-orchestrator:
+          golden-record-scheduler-cron-expr:  "*/30 * * * * *"
       pool-security:
         readPoolPartnerData: view_company_data
         changePoolPartnerData: add_company_data
         readMetaData: view_company_data
         changeMetaData: add_company_data
         manageOpensearch: add_company_data
-      opensearch:
-        # every hour at minute 30
-        export-scheduler-cron-expr: 0 30 * * * *
       security:
         auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
         realm: CX-Central
@@ -132,8 +134,6 @@ bpdm-pool:
     spring:
       datasource:
         password: <path:bpdm/data/dev/pool/postgresql#password>
-  opensearch:
-    fullnameOverride: "bpdm-dev-opensearch"
 
 bpdm-bridge-dummy:
   image:
@@ -176,12 +176,13 @@ bpdm-bridge-dummy:
       servlet:
         context-path: "/bridge"
     bpdm:
+      client:
+        pool:
+          base-url: "http://bpdm-dev-pool:8080/pool"
+        gate:
+          base-url: "http://bpdm-dev-gate-test-company:8080/companies/test-company"
       bridge:
         syncAuthorities: add_company_data
-      pool:
-        base-url: "http://bpdm-dev-pool:8080/pool"
-      gate:
-        base-url: "http://bpdm-dev-gate-test-company:8080/companies/test-company"
       security:
         auth-server-url: https://centralidp.dev.demo.catena-x.net/auth
         realm: CX-Central
@@ -244,60 +245,11 @@ bpdm-cleaning-service-dummy:
       memory: 2Gi
   applicationConfig:
     bpdm:
-      orchestrator:
-        base-url: "http://bpdm-dev-orchestrator:8080/"
-    cleaningService:
-      pollingCron: "*/30 * * * * *"
-
-opensearch:
-  masterService: ""
-  fullnameOverride: "bpdm-dev-opensearch"
-  enabled: true
-  replicas: 1
-  protocol: http
-  roles:
-    - master
-    - ingest
-    - data
-  resources:
-    limits:
-      cpu: 300m
-      memory: 2Gi
-    requests:
-      cpu: 100m
-      memory: 2Gi
-  config:
-    opensearch.yml: |
-      # Bind to all interfaces because we don't know what
-      # IP address Docker will assign to us.
-      network.host: 0.0.0.0
-      # Disable security
-      plugins.security.disabled: true
-  securityConfig:
-    enabled: false
-  extraInitContainers:
-    # Image that performs the sysctl operation to modify Kernel settings
-    # needed sometimes to avoid boot errors
-    - name: sysctl
-      image: docker.io/bitnami/bitnami-shell:10-debian-10-r199
-      imagePullPolicy: "IfNotPresent"
-      command:
-        - /bin/bash
-        - -ec
-        - |
-          CURRENT=`sysctl -n vm.max_map_count`;
-          DESIRED="262144";
-          if [ "$DESIRED" -gt "$CURRENT" ]; then
-              sysctl -w vm.max_map_count=262144;
-          fi;
-          CURRENT=`sysctl -n fs.file-max`;
-          DESIRED="65536";
-          if [ "$DESIRED" -gt "$CURRENT" ]; then
-              sysctl -w fs.file-max=65536;
-          fi;
-      securityContext:
-        runAsUser: 0
-        privileged: true
+      client:
+        orchestrator:
+          base-url: "http://bpdm-dev-orchestrator:8080/"
+      cleaningService:
+        pollingCron: "*/30 * * * * *"
 
 postgres:
   auth:
