@@ -38,13 +38,22 @@ bpdm-gate:
       servlet:
         context-path: "/companies/test-company"
     bpdm:
-      cleaningService:
-        pollingCron: "*/30 * * * * *"
+      tasks:
+        creation:
+          fromSharingMember:
+            batchSize: 100
+            cron: '*/30 * * * * *'
+          fromPool:
+            batchSize: 100
+            cron: '-'
+        check:
+          batchSize: 100
+          cron: '*/30 * * * * *'
       client:
         orchestrator:
           base-url: "http://bpdm-dev-orchestrator:8080/"
         pool:
-          base-url: "http://bpdm-dev-pool:8080/"
+          base-url: "http://bpdm-dev-pool:8080/pool"
       gate-security:
         readCompanyInputData: view_company_data
         changeCompanyInputData: add_company_data
