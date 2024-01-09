@@ -1,0 +1,18 @@
+project: project-bpdm
+source:
+  repoURL: 'https://github.com/eclipse-tractusx/bpdm-certificate-management'
+  path: charts/bpdm-certificate-management
+  targetRevision: main
+  plugin:
+    env:
+      - name: AVP_SECRET
+        value: vault-secret
+      - name: helm_args
+        value: >-
+          -f
+          https://raw.githubusercontent.com/catenax-ng/product-bpdm-env/main/dev/bpdm-certificate-management/values.yaml
+destination:
+  server: 'https://kubernetes.default.svc'
+  namespace: product-bpdm
+syncPolicy:
+  automated: {}
