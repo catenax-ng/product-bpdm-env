@@ -20,7 +20,7 @@ txdc:
     vault: false
 
   participant:
-    id: "BPNL00000003CUFH"
+    id: "BPNL00000007RWSM"
 
   controlplane:
     internationalDataSpaces:
@@ -63,7 +63,7 @@ txdc:
       oauth:
         tokenurl: "https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/token"
         client:
-          id: "sa234"
+          id: "sa122"
           secretAlias: "dev/edc/sharing-member/CLIENT_SECRET"
 
   dataplane:
