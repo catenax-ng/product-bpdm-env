@@ -37,11 +37,31 @@ bpdm-gate:
       servlet:
         context-path: "/companies/test-company"
     bpdm:
+      pool:
+        security-enabled: true
+      tasks:
+        creation:
+          fromSharingMember:
+            batchSize: 100
+            cron: '*/30 * * * * *'
+          fromPool:
+            batchSize: 100
+            cron: '*/30 * * * * *'
+        check:
+          batchSize: 100
+          cron: '*/30 * * * * *'
+      client:
+        orchestrator:
+          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+        pool:
+          base-url: "http://bpdm-int-pool:8080/pool"
+          oauth2-client-registration: pool-client
       gate-security:
-        changeCompanyInputData: update_company_data
-        changeCompanyOutputData: update_company_data
+        pool-security-enabled: true
         readCompanyInputData: view_company_data
+        changeCompanyInputData: update_company_data
         readCompanyOutputData: view_shared_data
+        changeCompanyOutputData: update_company_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
@@ -50,13 +70,13 @@ bpdm-gate:
       security:
         oauth2:
           client:
-            registration:
-              gate-client:
-                # Client ID used for getting token different from own Client to validate tokens
-                client-id: sa-cl7-cx-7
             provider:
-              catena-keycloak-provider:
+              pool-client:
                 issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
+            registration:
+              pool-client:
+                client-id: sa-cl7-cx-7
+                provider: pool-client
     springdoc:
       swagger-ui:
         oauth:
@@ -65,10 +85,13 @@ bpdm-gate:
     spring:
       datasource:
         password: <path:bpdm/data/int/pool/postgresql#password>
-    bpdm:
       security:
-        credentials:
-          secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+        oauth2:
+          client:
+            registration:
+              pool-client:
+                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+
   postgres:
     enabled: false
 
@@ -112,15 +135,15 @@ bpdm-pool:
       servlet:
         context-path: "/pool"
     bpdm:
+      client:
+        pool-orchestrator:
+          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          golden-record-scheduler-cron-expr: "*/30 * * * * *"
       pool-security:
         readPoolPartnerData: view_company_data
         changePoolPartnerData: add_company_data
         readMetaData: view_company_data
         changeMetaData: add_company_data
-        manageOpensearch: add_company_data
-      opensearch:
-        # every hour at minute 30
-        export-scheduler-cron-expr: 0 30 * * * *
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
@@ -133,13 +156,13 @@ bpdm-pool:
     spring:
       datasource:
         password: <path:bpdm/data/int/pool/postgresql#password>
-  opensearch:
-    fullnameOverride: "bpdm-int-opensearch"
 
 bpdm-bridge-dummy:
   fullnameOverride: bpdm-int-bridge
   springProfiles:
     - auth
+    - gate-auth
+    - pool-auth
   ingress:
     enabled: true
     annotations:
@@ -175,12 +198,14 @@ bpdm-bridge-dummy:
       servlet:
         context-path: "/bridge"
     bpdm:
+      client:
+        pool:
+          base-url: "http://bpdm-int-pool:8080/pool"
+        gate:
+          base-url: "http://bpdm-int-gate-test-company:8080/companies/test-company"
       bridge:
-        syncAuthorities: add_company_data
-      pool:
-        base-url: "http://bpdm-int-pool:8080/pool"
-      gate:
-        base-url: "http://bpdm-int-gate-test-company:8080/companies/test-company"
+        permissions:
+          syncAuthorities: add_company_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
@@ -190,70 +215,66 @@ bpdm-bridge-dummy:
         oauth2:
           client:
             registration:
-              bridge-client:
-                # Client ID used for getting token different from own Client to validate tokens
+              pool-client:
                 client-id: sa-cl7-cx-7
-            provider:
-              catena-keycloak-provider:
-                issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
+              gate-client:
+                client-id: sa-cl7-cx-7
   applicationSecrets:
     spring:
       datasource:
         password: <path:bpdm/data/int/pool/postgresql#password>
-    bpdm:
       security:
-        credentials:
-          secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+        oauth2:
+          client:
+            registration:
+              gate-client:
+                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+              pool-client:
+                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
 
-opensearch:
-  masterService: ""
-  fullnameOverride: "bpdm-int-opensearch"
+bpdm-orchestrator:
+  fullnameOverride: bpdm-int-orchestrator
   enabled: true
-  replicas: 1
-  protocol: http
-  roles:
-    - master
-    - ingest
-    - data
+  replicaCount: 1
   resources:
     limits:
-      cpu: 300m
+      cpu: 800m
       memory: 2Gi
     requests:
-      cpu: 100m
+      cpu: 300m
       memory: 2Gi
-  config:
-    opensearch.yml: |
-      # Bind to all interfaces because we don't know what
-      # IP address Docker will assign to us.
-      network.host: 0.0.0.0
-      # Disable security
-      plugins.security.disabled: true
-  securityConfig:
-    enabled: false
-  extraInitContainers:
-    # Image that performs the sysctl operation to modify Kernel settings
-    # needed sometimes to avoid boot errors
-    - name: sysctl
-      image: docker.io/bitnami/bitnami-shell:10-debian-10-r199
-      imagePullPolicy: "IfNotPresent"
-      command:
-        - /bin/bash
-        - -ec
-        - |
-          CURRENT=`sysctl -n vm.max_map_count`;
-          DESIRED="262144";
-          if [ "$DESIRED" -gt "$CURRENT" ]; then
-              sysctl -w vm.max_map_count=262144;
-          fi;
-          CURRENT=`sysctl -n fs.file-max`;
-          DESIRED="65536";
-          if [ "$DESIRED" -gt "$CURRENT" ]; then
-              sysctl -w fs.file-max=65536;
-          fi;
-      securityContext:
-        runAsUser: 0
-        privileged: true
+  livenessProbe:
+    httpGet:
+      path: "orchestrator/actuator/health/liveness"
+  readinessProbe:
+    httpGet:
+      path: "orchestrator/actuator/health/readiness"
+  startupProbe:
+    httpGet:
+      path: "orchestrator/actuator/health/readiness"
+  applicationConfig:
+    server:
+      servlet:
+        context-path: "/orchestrator"
+
+bpdm-cleaning-service-dummy:
+  fullnameOverride: bpdm-int-cleaning-service
+  enabled: true
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 800m
+      memory: 2Gi
+    requests:
+      cpu: 300m
+      memory: 2Gi
+  applicationConfig:
+    bpdm:
+      client:
+        orchestrator:
+          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+      cleaningService:
+        pollingCron: "*/30 * * * * *"
 
 postgres:
   auth:
