@@ -12,6 +12,7 @@ bpdm-gate:
   springProfiles:
     - auth
     - pool-auth
+    - orchestrator-auth
   ingress:
     enabled: true
     hosts:
@@ -22,7 +23,7 @@ bpdm-gate:
     tls:
       - secretName: tls-secret
         hosts:
-          - business-partners.dev.demo.catena-x.net
+          - business-partners-pen.dev.demo.catena-x.net
   livenessProbe:
     httpGet:
       path: "/companies/test-company/actuator/health/liveness"
@@ -37,26 +38,39 @@ bpdm-gate:
       servlet:
         context-path: "/companies/test-company"
     bpdm:
-      gate-security:
-        changeCompanyInputData: update_company_data
-        changeCompanyOutputData: update_company_data
-        readCompanyInputData: view_company_data
-        readCompanyOutputData: view_shared_data
+      bpn:
+        owner-bpn-l:
+      tasks:
+        creation:
+          fromSharingMember:
+            cron: '*/30 * * * * *'
+          fromPool:
+            cron: '*/30 * * * * *'
+        check:
+          cron: '*/30 * * * * *'
+      client:
+        orchestrator:
+          base-url: "http://bpdm-pen-orchestrator:8080/orchestrator"
+        pool:
+          base-url: "http://bpdm-pen-pool:8080/pool"
       security:
         auth-server-url: https://centralidp-pen.dev.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl16-CX-BPDMGate
+        permissions:
+          readInput: view_company_data
+          writeInput: update_company_data
+          readOutput: view_shared_data
+          writeOutput: update_company_data
     spring:
       security:
         oauth2:
           client:
             registration:
-              gate-client:
-                # Client ID used for getting token different from own Client to validate tokens
+              pool-client:
                 client-id: sa-cl7-cx-7
-            provider:
-              catena-keycloak-provider:
-                issuer-uri: https://centralidp-pen.dev.demo.catena-x.net/auth/realms/CX-Central
+              orchestrator-client:
+                client-id: sa-cl7-cx-7
     springdoc:
       swagger-ui:
         oauth:
@@ -65,10 +79,15 @@ bpdm-gate:
     spring:
       datasource:
         password: <path:bpdm/data/pen/postgresql#password>
-    bpdm:
       security:
-        credentials:
-          secret: <path:bpdm/data/pen/admin-user#client-secret>
+        oauth2:
+          client:
+            registration:
+              pool-client:
+                client-secret: <path:bpdm/data/pen/admin-user#client-secret>
+              orchestrator-client:
+                client-secret: <path:bpdm/data/pen/admin-user#client-secret>
+
   postgres:
     enabled: false
 
@@ -77,6 +96,7 @@ bpdm-pool:
   enabled: true
   springProfiles:
     - auth
+    - orchestrator-auth
   resources:
     limits:
       cpu: 800m
@@ -97,7 +117,7 @@ bpdm-pool:
     tls:
       - secretName: tls-secret
         hosts:
-          - business-partners.dev.demo.catena-x.net
+          - business-partners-pen.dev.demo.catena-x.net
   livenessProbe:
     httpGet:
       path: "/pool/actuator/health/liveness"
@@ -112,34 +132,50 @@ bpdm-pool:
       servlet:
         context-path: "/pool"
     bpdm:
-      pool-security:
-        readPoolPartnerData: view_company_data
-        changePoolPartnerData: add_company_data
-        readMetaData: view_company_data
-        changeMetaData: add_company_data
-        manageOpensearch: add_company_data
-      opensearch:
-        # every hour at minute 30
-        export-scheduler-cron-expr: 0 30 * * * *
+      tasks:
+        cron: "*/30 * * * * *"
+      client:
+        orchestrator:
+          base-url: "http://bpdm-pen-orchestrator:8080/orchestrator"
       security:
         auth-server-url: https://centralidp-pen.dev.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl7-CX-BPDM
+        permissions:
+          readPartner: view_company_data
+          writePartner: add_company_data
+          readMetaData: view_company_data
+          writeMetaData: add_company_data
     springdoc:
       swagger-ui:
         oauth:
           client-id: Cl2-CX-Portal
+    spring:
+      security:
+        oauth2:
+          client:
+            provider:
+            registration:
+              orchestrator-client:
+                client-id: sa-cl7-cx-7
   applicationSecrets:
     spring:
       datasource:
         password: <path:bpdm/data/pen/postgresql#password>
-  opensearch:
-    fullnameOverride: "bpdm-pen-opensearch"
+      security:
+        oauth2:
+          client:
+            provider:
+            registration:
+              orchestrator-client:
+                client-secret: <path:bpdm/data/pen/admin-user#client-secret>
 
 bpdm-bridge-dummy:
   fullnameOverride: bpdm-pen-bridge
   springProfiles:
     - auth
+    - gate-auth
+    - pool-auth
   ingress:
     enabled: true
     annotations:
@@ -153,7 +189,7 @@ bpdm-bridge-dummy:
     tls:
       - secretName: tls-secret
         hosts:
-          - business-partners.dev.demo.catena-x.net
+          - business-partners-pen.dev.demo.catena-x.net
   livenessProbe:
     httpGet:
       path: "/bridge/actuator/health/liveness"
@@ -175,85 +211,116 @@ bpdm-bridge-dummy:
       servlet:
         context-path: "/bridge"
     bpdm:
-      bridge:
-        syncAuthorities: add_company_data
-      pool:
-        base-url: "http://bpdm-pen-pool:8080/pool"
-      gate:
-        base-url: "http://bpdm-pen-gate-test-company:8080/companies/test-company"
+      client:
+        pool:
+          base-url: "http://bpdm-pen-pool:8080/pool"
+        gate:
+          base-url: "http://bpdm-pen-gate-test-company:8080/companies/test-company"
       security:
         auth-server-url: https://centralidp-pen.dev.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl7-CX-BPDM
+        permissions:
+          sync: add_company_data
     spring:
       security:
         oauth2:
           client:
             registration:
-              bridge-client:
-                # Client ID used for getting token different from own Client to validate tokens
+              pool-client:
                 client-id: sa-cl7-cx-7
-            provider:
-              catena-keycloak-provider:
-                issuer-uri: https://centralidp-pen.dev.demo.catena-x.net/auth/realms/CX-Central
+              gate-client:
+                client-id: sa-cl7-cx-7
   applicationSecrets:
     spring:
       datasource:
         password: <path:bpdm/data/pen/postgresql#password>
-    bpdm:
       security:
-        credentials:
-          secret: <path:bpdm/data/pen/admin-user#client-secret>
+        oauth2:
+          client:
+            registration:
+              gate-client:
+                client-secret: <path:bpdm/data/pen/admin-user#client-secret>
+              pool-client:
+                client-secret: <path:bpdm/data/pen/admin-user#client-secret>
 
-opensearch:
-  masterService: ""
-  fullnameOverride: "bpdm-pen-opensearch"
+bpdm-orchestrator:
+  fullnameOverride: bpdm-pen-orchestrator
   enabled: true
-  replicas: 1
-  protocol: http
-  roles:
-    - master
-    - ingest
-    - data
+  springProfiles:
+    - auth
+  replicaCount: 1
   resources:
     limits:
-      cpu: 300m
+      cpu: 800m
       memory: 2Gi
     requests:
-      cpu: 100m
+      cpu: 300m
       memory: 2Gi
-  config:
-    opensearch.yml: |
-      # Bind to all interfaces because we don't know what
-      # IP address Docker will assign to us.
-      network.host: 0.0.0.0
-      # Disable security
-      plugins.security.disabled: true
-  securityConfig:
-    enabled: false
-  extraInitContainers:
-    # Image that performs the sysctl operation to modify Kernel settings
-    # needed sometimes to avoid boot errors
-    - name: sysctl
-      image: docker.io/bitnami/bitnami-shell:10-debian-10-r199
-      imagePullPolicy: "IfNotPresent"
-      command:
-        - /bin/bash
-        - -ec
-        - |
-          CURRENT=`sysctl -n vm.max_map_count`;
-          DESIRED="262144";
-          if [ "$DESIRED" -gt "$CURRENT" ]; then
-              sysctl -w vm.max_map_count=262144;
-          fi;
-          CURRENT=`sysctl -n fs.file-max`;
-          DESIRED="65536";
-          if [ "$DESIRED" -gt "$CURRENT" ]; then
-              sysctl -w fs.file-max=65536;
-          fi;
-      securityContext:
-        runAsUser: 0
-        privileged: true
+  livenessProbe:
+    httpGet:
+      path: "orchestrator/actuator/health/liveness"
+  readinessProbe:
+    httpGet:
+      path: "orchestrator/actuator/health/readiness"
+  startupProbe:
+    httpGet:
+      path: "orchestrator/actuator/health/readiness"
+  applicationConfig:
+    server:
+      servlet:
+        context-path: "/orchestrator"
+    bpdm:
+      security:
+        auth-server-url: https://centralidp-pen.dev.demo.catena-x.net/auth
+        realm: CX-Central
+        client-id: Cl7-CX-BPDM
+        permissions:
+          createTask: add_company_data
+          viewTask: view_company_data
+          processTask:
+            clean: add_company_data
+            cleanAndSync: add_company_data
+            poolSync: add_company_data
+
+bpdm-cleaning-service-dummy:
+  fullnameOverride: bpdm-pen-cleaning-service
+  springProfiles:
+    - orchestrator-auth
+  enabled: true
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 800m
+      memory: 2Gi
+    requests:
+      cpu: 300m
+      memory: 2Gi
+  applicationConfig:
+    bpdm:
+      client:
+        orchestrator:
+          base-url: "http://bpdm-pen-orchestrator:8080/orchestrator"
+      cleaningService:
+        pollingCron: "*/30 * * * * *"
+    spring:
+      security:
+        oauth2:
+          client:
+            provider:
+              orchestrator-oauth2-provider:
+                issuer-uri: https://centralidp-pen.dev.demo.catena-x.net/auth/realms/CX-Central
+            registration:
+              orchestrator-client:
+                client-id: sa-cl7-cx-7
+  applicationSecrets:
+    spring:
+      security:
+        oauth2:
+          client:
+            registration:
+              orchestrator-client:
+                client-secret:  <path:bpdm/data/pen/admin-user#client-secret>
 
 postgres:
   auth:
