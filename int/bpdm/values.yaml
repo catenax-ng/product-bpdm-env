@@ -12,6 +12,7 @@ bpdm-gate:
   springProfiles:
     - auth
     - pool-auth
+    - orchestrator-auth
   ingress:
     enabled: true
     hosts:
@@ -37,46 +38,39 @@ bpdm-gate:
       servlet:
         context-path: "/companies/test-company"
     bpdm:
-      pool:
-        security-enabled: true
+      bpn:
+        owner-bpn-l:
       tasks:
         creation:
           fromSharingMember:
-            batchSize: 100
             cron: '*/30 * * * * *'
           fromPool:
-            batchSize: 100
             cron: '*/30 * * * * *'
         check:
-          batchSize: 100
           cron: '*/30 * * * * *'
       client:
         orchestrator:
           base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
         pool:
           base-url: "http://bpdm-int-pool:8080/pool"
-          oauth2-client-registration: pool-client
-      gate-security:
-        pool-security-enabled: true
-        readCompanyInputData: view_company_data
-        changeCompanyInputData: update_company_data
-        readCompanyOutputData: view_shared_data
-        changeCompanyOutputData: update_company_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl16-CX-BPDMGate
+        permissions:
+          readInput: view_company_data
+          writeInput: update_company_data
+          readOutput: view_shared_data
+          writeOutput: update_company_data
     spring:
       security:
         oauth2:
           client:
-            provider:
-              pool-client:
-                issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
             registration:
               pool-client:
                 client-id: sa-cl7-cx-7
-                provider: pool-client
+              orchestrator-client:
+                client-id: sa-cl7-cx-7
     springdoc:
       swagger-ui:
         oauth:
@@ -91,6 +85,8 @@ bpdm-gate:
             registration:
               pool-client:
                 client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+              orchestrator-client:
+                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
 
   postgres:
     enabled: false
@@ -100,6 +96,7 @@ bpdm-pool:
   enabled: true
   springProfiles:
     - auth
+    - orchestrator-auth
   resources:
     limits:
       cpu: 800m
@@ -135,27 +132,43 @@ bpdm-pool:
       servlet:
         context-path: "/pool"
     bpdm:
+      tasks:
+        cron: "*/30 * * * * *"
       client:
-        pool-orchestrator:
+        orchestrator:
           base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
-          golden-record-scheduler-cron-expr: "*/30 * * * * *"
-      pool-security:
-        readPoolPartnerData: view_company_data
-        changePoolPartnerData: add_company_data
-        readMetaData: view_company_data
-        changeMetaData: add_company_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl7-CX-BPDM
+        permissions:
+          readPartner: view_company_data
+          writePartner: add_company_data
+          readMetaData: view_company_data
+          writeMetaData: add_company_data
     springdoc:
       swagger-ui:
         oauth:
           client-id: Cl2-CX-Portal
+    spring:
+      security:
+        oauth2:
+          client:
+            provider:
+            registration:
+              orchestrator-client:
+                client-id: sa-cl7-cx-7
   applicationSecrets:
     spring:
       datasource:
         password: <path:bpdm/data/int/pool/postgresql#password>
+      security:
+        oauth2:
+          client:
+            provider:
+            registration:
+              orchestrator-client:
+                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
 
 bpdm-bridge-dummy:
   fullnameOverride: bpdm-int-bridge
@@ -203,13 +216,12 @@ bpdm-bridge-dummy:
           base-url: "http://bpdm-int-pool:8080/pool"
         gate:
           base-url: "http://bpdm-int-gate-test-company:8080/companies/test-company"
-      bridge:
-        permissions:
-          syncAuthorities: add_company_data
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl7-CX-BPDM
+        permissions:
+          sync: add_company_data
     spring:
       security:
         oauth2:
@@ -235,6 +247,8 @@ bpdm-bridge-dummy:
 bpdm-orchestrator:
   fullnameOverride: bpdm-int-orchestrator
   enabled: true
+  springProfiles:
+    - auth
   replicaCount: 1
   resources:
     limits:
@@ -256,9 +270,23 @@ bpdm-orchestrator:
     server:
       servlet:
         context-path: "/orchestrator"
+    bpdm:
+      security:
+        auth-server-url: https://centralidp.int.demo.catena-x.net/auth
+        realm: CX-Central
+        client-id: Cl7-CX-BPDM
+        permissions:
+          createTask: add_company_data
+          viewTask: view_company_data
+          processTask:
+            clean: add_company_data
+            cleanAndSync: add_company_data
+            poolSync: add_company_data
 
 bpdm-cleaning-service-dummy:
   fullnameOverride: bpdm-int-cleaning-service
+  springProfiles:
+    - orchestrator-auth
   enabled: true
   replicaCount: 1
   resources:
@@ -275,6 +303,25 @@ bpdm-cleaning-service-dummy:
           base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
       cleaningService:
         pollingCron: "*/30 * * * * *"
+    spring:
+      security:
+        oauth2:
+          client:
+            provider:
+              orchestrator-oauth2-provider:
+                issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
+            registration:
+              orchestrator-client:
+                client-id: sa-cl7-cx-7
+  applicationSecrets:
+    spring:
+      security:
+        oauth2:
+          client:
+            registration:
+              orchestrator-client:
+                client-secret:  <path:bpdm/data/int/pool/admin-user#client-secret>
+
 
 postgres:
   auth:
