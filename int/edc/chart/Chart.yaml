@@ -2,12 +2,12 @@ apiVersion: v2
 name: edc
 description: A Helm chart for deploying an EDC for the BPDM environment
 type: application
-version: 0.0.4
-appVersion: 0.0.2
+version: 0.0.5
+appVersion: "0.6.0"
 dependencies:
   - name: tractusx-connector
     alias: txdc
-    version: 0.5.3
+    version: 0.6.0
     repository: https://eclipse-tractusx.github.io/charts/dev
   - name: opensearch
     version: 2.4.0
