@@ -1,7 +1,7 @@
 bpdm-gate:
-  fullnameOverride: bpdm-int-gate-test-company
+  fullnameOverride: bpdm-migration-gate-test-company
   enabled: true
-  replicaCount: 1
+  replicaCount: 0
   resources:
     limits:
       cpu: 800m
@@ -16,14 +16,14 @@ bpdm-gate:
   ingress:
     enabled: true
     hosts:
-      - host: business-partners.int.demo.catena-x.net
+      - host: business-partners-migration.int.demo.catena-x.net
         paths:
           - path: "/companies/test-company"
             pathType: Prefix
     tls:
       - secretName: tls-secret
         hosts:
-          - business-partners.int.demo.catena-x.net
+          - business-partners-migration.int.demo.catena-x.net
   livenessProbe:
     httpGet:
       path: "/companies/test-company/actuator/health/liveness"
@@ -50,9 +50,9 @@ bpdm-gate:
           cron: '*/30 * * * * *'
       client:
         orchestrator:
-          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-migration-orchestrator:8080/orchestrator"
         pool:
-          base-url: "http://bpdm-int-pool:8080/pool"
+          base-url: "http://bpdm-migration-pool:8080/pool"
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
@@ -92,8 +92,9 @@ bpdm-gate:
     enabled: false
 
 bpdm-pool:
-  fullnameOverride: bpdm-int-pool
+  fullnameOverride: bpdm-migration-pool
   enabled: true
+  replicaCount: 0
   springProfiles:
     - auth
     - orchestrator-auth
@@ -110,14 +111,14 @@ bpdm-pool:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     hosts:
-      - host: business-partners.int.demo.catena-x.net
+      - host: business-partners-migration.int.demo.catena-x.net
         paths:
           - path: /pool
             pathType: Prefix
     tls:
       - secretName: tls-secret
         hosts:
-          - business-partners.int.demo.catena-x.net
+          - business-partners-migration.int.demo.catena-x.net
   livenessProbe:
     httpGet:
       path: "/pool/actuator/health/liveness"
@@ -136,7 +137,7 @@ bpdm-pool:
         cron: "*/30 * * * * *"
       client:
         orchestrator:
-          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-migration-orchestrator:8080/orchestrator"
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
@@ -171,7 +172,8 @@ bpdm-pool:
                 client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
 
 bpdm-bridge-dummy:
-  fullnameOverride: bpdm-int-bridge
+  fullnameOverride: bpdm-migration-bridge
+  replicaCount: 0
   springProfiles:
     - auth
     - gate-auth
@@ -182,14 +184,14 @@ bpdm-bridge-dummy:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     hosts:
-      - host: business-partners.int.demo.catena-x.net
+      - host: business-partners-migration.int.demo.catena-x.net
         paths:
           - path: /bridge
             pathType: Prefix
     tls:
       - secretName: tls-secret
         hosts:
-          - business-partners.int.demo.catena-x.net
+          - business-partners-migration.int.demo.catena-x.net
   livenessProbe:
     httpGet:
       path: "/bridge/actuator/health/liveness"
@@ -213,9 +215,9 @@ bpdm-bridge-dummy:
     bpdm:
       client:
         pool:
-          base-url: "http://bpdm-int-pool:8080/pool"
+          base-url: "http://bpdm-migration-pool:8080/pool"
         gate:
-          base-url: "http://bpdm-int-gate-test-company:8080/companies/test-company"
+          base-url: "http://bpdm-migration-gate-test-company:8080/companies/test-company"
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
@@ -245,11 +247,11 @@ bpdm-bridge-dummy:
                 client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
 
 bpdm-orchestrator:
-  fullnameOverride: bpdm-int-orchestrator
+  fullnameOverride: bpdm-migration-orchestrator
   enabled: true
   springProfiles:
     - auth
-  replicaCount: 1
+  replicaCount: 0
   resources:
     limits:
       cpu: 800m
@@ -284,11 +286,11 @@ bpdm-orchestrator:
             poolSync: add_company_data
 
 bpdm-cleaning-service-dummy:
-  fullnameOverride: bpdm-int-cleaning-service
+  fullnameOverride: bpdm-migration-cleaning-service
   springProfiles:
     - orchestrator-auth
   enabled: true
-  replicaCount: 1
+  replicaCount: 0
   resources:
     limits:
       cpu: 800m
@@ -300,7 +302,7 @@ bpdm-cleaning-service-dummy:
     bpdm:
       client:
         orchestrator:
-          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-migration-orchestrator:8080/orchestrator"
       cleaningService:
         pollingCron: "*/30 * * * * *"
     spring:
