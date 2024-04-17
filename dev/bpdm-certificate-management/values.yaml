@@ -17,14 +17,14 @@ springProfiles:
 ingress:
   enabled: true
   hosts:
-    - host: business-partners-certificate.dev.demo.catena-x.net
+    - host: business-partners-certificate-test.dev.demo.catena-x.net
       paths:
         - path: "/test-certificate"
           pathType: Prefix
   tls:
     - secretName: tls-secret
       hosts:
-        - business-partners-certificate.dev.demo.catena-x.net
+        - business-partners-certificate-test.dev.demo.catena-x.net
 
 livenessProbe:
   httpGet:
