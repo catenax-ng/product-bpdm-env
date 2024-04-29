@@ -1,112 +1,92 @@
-opensearch:
-  ingress:
-    enabled: true
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    hosts:
-      - edc-sharing-member-backend.int.demo.catena-x.net
-    tls:
-      - secretName: tls-secret
-        hosts:
-          - edc-sharing-member-backend.int.demo.catena-x.net
-  masterService: ""
-  fullnameOverride: edc-sharing-member-backend
+install:
+  postgresql: true
+  vault: false
 
-txdc:
-  install:
-    daps: false
-    postgresql: true
-    vault: false
+participant:
+  id: "BPNL00000007RWSM"
 
-  participant:
-    id: "BPNL00000007RWSM"
+iatp:
+  # Decentralized IDentifier
+  id: "did:web:portal-backend.int.demo.catena-x.net:api:administration:staticdata:did:BPNL00000007RWSM"
+  sts:
+    dim:
+      url: "https://dis-integration-service-prod.eu10.dim.cloud.sap/api/v2.0.0/iatp/catena-x-portal"
+    oauth:
+      token_url: "https://bpnl00000007rwsm-bpdm--sharing--member.authentication.eu10.hana.ondemand.com/oauth/token"
+      client:
+        id: "sa89"
+        secret_alias: "dev/edc/sharing-member/CLIENT_SECRET"
 
-  controlplane:
-    internationalDataSpaces:
-      id: TXDC-SHARING-MEMBER
-      description: Tractus-X Eclipse IDS Data Space Connector for Sharing Member
-      title: ""
-      maintainer: ""
-      curator: ""
-      catalogId: TXDC-SM-Catalog
-    endpoints:
-      # -- data management api, used by internal users, can be added to an ingress and must not be internet facing
-      management:
-        # -- authentication key, must be attached to each 'X-Api-Key' request header
-        authKey: <path:bpdm/data/dev/edc/sharing-member#controlplane-auth>
-    ## Ingress declaration to expose the network service.
-    ingresses:
-      ## Public / Internet facing Ingress
-      - enabled: true
-        # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-        hostname: "sharing-member-edc.int.demo.catena-x.net"
-        className: "nginx"
-        # -- EDC endpoints exposed by this ingress resource
-        endpoints:
-          - management
-          - control
-          - protocol
-        # -- TLS [tls class](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) applied to the ingress resource
-        tls:
-          # -- Enables TLS on the ingress resource
-          enabled: true
-          # -- If present overwrites the default secret name
-          secretName: tls-secret
-    url:
-      # -- Explicitly declared url for reaching the ids api (e.g. if ingresses not used)
-      ids: ""
-    ssi:
-      miw:
-        url: "https://managed-identity-wallets-new.int.demo.catena-x.net"
-        authorityId: "BPNL00000003CRHK"
-      oauth:
-        tokenurl: "https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/token"
-        client:
-          id: "sa122"
-          secretAlias: "dev/edc/sharing-member/CLIENT_SECRET"
+controlplane:
+  endpoints:
+    # -- data management api, used by internal users, can be added to an ingress and must not be internet facing
+    management:
+      # -- authentication key, must be attached to each 'X-Api-Key' request header
+      authKey: <path:bpdm/data/dev/edc/sharing-member#controlplane-auth>
+  bdrs:
+    server:
+      url: "https://bpn-did-resolution-service.int.demo.catena-x.net/api/management/bpn-directory"
+  ## Ingress declaration to expose the network service.
+  ingresses:
+    ## Public / Internet facing Ingress
+    - enabled: true
+      # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
+      hostname: "sharing-member-edc.int.demo.catena-x.net"
+      className: "nginx"
+      # -- EDC endpoints exposed by this ingress resource
+      endpoints:
+        - management
+        - control
+        - protocol
+      # -- TLS [tls class](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) applied to the ingress resource
+      tls:
+        # -- Enables TLS on the ingress resource
+        enabled: true
+        # -- If present overwrites the default secret name
+        secretName: tls-secret
 
-  dataplane:
-    ## Ingress declaration to expose the network service.
-    ingresses:
-      ## Public / Internet facing Ingress
-      - enabled: true
-        # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-        hostname: "sharing-member-edc.int.demo.catena-x.net"
-        # -- EDC endpoints exposed by this ingress resource
-        endpoints:
-          - public
-        # -- Defines the [ingress class](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class)  to use
-        className: "nginx"
-        # -- TLS [tls class](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) applied to the ingress resource
-        tls:
-          # -- Enables TLS on the ingress resource
-          enabled: true
-          # -- If present overwrites the default secret name
-          secretName: tls-secret
-    url:
-      # -- Explicitly declared url for reaching the public api (e.g. if ingresses not used)
-      public: ""
+dataplane:
+  ## Ingress declaration to expose the network service.
+  ingresses:
+    ## Public / Internet facing Ingress
+    - enabled: true
+      # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
+      hostname: "sharing-member-edc.int.demo.catena-x.net"
+      # -- EDC endpoints exposed by this ingress resource
+      endpoints:
+        - public
+      # -- Defines the [ingress class](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class)  to use
+      className: "nginx"
+      # -- TLS [tls class](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) applied to the ingress resource
+      tls:
+        # -- Enables TLS on the ingress resource
+        enabled: true
+        # -- If present overwrites the default secret name
+        secretName: tls-secret
+  token:
+    signer:
+      privatekey_alias: "dev/edc/gate/DAPS_PRIVATE_KEY"
+    verifier:
+      publickey_alias: "dev/edc/gate/DAPS_PUBLIC_KEY"
 
-  postgresql:
-    jdbcUrl: "jdbc:postgresql://edc-sharing-member-postgres:5432/edc"
-    fullnameOverride: "edc-sharing-member-postgres"
-    username: user
-    password: password
+postgresql:
+  jdbcUrl: "jdbc:postgresql://sharing-member-edc-postgres:5432/edc"
+  fullnameOverride: "sharing-member-edc-postgres"
+  primary:
+    persistence:
+      enabled: true
+  auth:
+    database: "edc"
+    username: "user"
+    password: <path:bpdm/data/dev/edc/sharing-member#controlplane-auth>
 
-  vault:
-    hashicorp:
-      url: "https://vault.demo.catena-x.net"
-      token: <path:bpdm/data/dev/edc/sharing-member#vault-token>
-      paths:
-        secret: /v1/bpdm
-    secretNames:
-      transferProxyTokenEncryptionAesKey: dev/edc/sharing-member/DATA_ENCRYPTION_KEYS_ALIAS
-      transferProxyTokenSignerPrivateKey: dev/edc/sharing-member/DAPS_PRIVATE_KEY
-      transferProxyTokenSignerPublicKey: dev/edc/sharing-member/DAPS_PUBLIC_KEY
-      dapsPrivateKey: dev/edc/sharing-member/DAPS_PRIVATE_KEY
-      dapsPublicKey: dev/edc/sharing-member/DAPS_PUBLIC_KEY
-
-  backendService:
-    httpProxyTokenReceiverUrl: "http://edc-sharing-member-backend.int.demo.catena-x.net"
-
+vault:
+  hashicorp:
+    url: "https://vault.demo.catena-x.net"
+    token: <path:bpdm/data/dev/edc/gate#vault-token>
+    paths:
+      secret: /v1/bpdm
+  secretNames:
+    transferProxyTokenEncryptionAesKey: dev/edc/gate/DATA_ENCRYPTION_KEYS_ALIAS
+    transferProxyTokenSignerPrivateKey: dev/edc/gate/DAPS_PRIVATE_KEY
+    transferProxyTokenSignerPublicKey: dev/edc/gate/DAPS_PUBLIC_KEY
