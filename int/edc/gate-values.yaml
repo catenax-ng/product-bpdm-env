@@ -8,16 +8,20 @@ participant:
 iatp:
   # Decentralized IDentifier
   id: "did:web:portal-backend.int.demo.catena-x.net:api:administration:staticdata:did:BPNL00000007RF54"
+  trustedIssuers:
+    - "did:web:dim-static-prod.dis-cloud-prod.cfapps.eu10-004.hana.ondemand.com:dim-hosted:2f45795c-d6cc-4038-96c9-63cedc0cd266:holder-iatp"
   sts:
     dim:
       url: "https://dis-integration-service-prod.eu10.dim.cloud.sap/api/v2.0.0/iatp/catena-x-portal"
     oauth:
       token_url: "https://bpnl00000007rf54-bpdm--golden--record.authentication.eu10.hana.ondemand.com/oauth/token"
       client:
-        id: "sa86"
+        id: "sb-0d52b7f2-e7d0-4577-9647-f5132921e452!b459174|ica-production-dim-prod-eu10-004-prod-dis-cloud-approuter!b174292"
         secret_alias: "dev/edc/gate/CLIENT_SECRET"
 
 controlplane:
+  env:
+    EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: did:web:dim-static-prod.dis-cloud-prod.cfapps.eu10-004.hana.ondemand.com:dim-hosted:2f45795c-d6cc-4038-96c9-63cedc0cd266:holder-iatp
   endpoints:
     # -- data management api, used by internal users, can be added to an ingress and must not be internet facing
     management:
@@ -46,6 +50,8 @@ controlplane:
         secretName: tls-secret
 
 dataplane:
+  env:
+    EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: did:web:dim-static-prod.dis-cloud-prod.cfapps.eu10-004.hana.ondemand.com:dim-hosted:2f45795c-d6cc-4038-96c9-63cedc0cd266:holder-iatp
   ## Ingress declaration to expose the network service.
   ingresses:
     ## Public / Internet facing Ingress
