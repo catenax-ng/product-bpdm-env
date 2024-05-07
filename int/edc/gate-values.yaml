@@ -29,7 +29,7 @@ controlplane:
       authKey: <path:bpdm/data/dev/edc/gate#controlplane-auth>
   bdrs:
     server:
-      url: "https://bpn-did-resolution-service.int.demo.catena-x.net/api/management/bpn-directory"
+      url: "https://bpn-did-resolution-service.int.demo.catena-x.net/api/directory"
   ## Ingress declaration to expose the network service.
   ingresses:
     ## Public / Internet facing Ingress
