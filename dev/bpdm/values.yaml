@@ -248,4 +248,14 @@ postgres:
     password: <path:bpdm/data/dev/pool/postgresql#password>
 
 keycloak:
-  enabled: false
+  enabled: true
+  postgresql:
+    enabled: true
+    nameOverride: "keycloak-postgres"
+  auth:
+    adminPassword: <path:bpdm/data/dev/pool/postgresql#password>
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    hostname: "bpdm-keycloak.dev.demo.catena-x.net"
+    servicePort: http
