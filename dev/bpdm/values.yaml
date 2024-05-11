@@ -242,6 +242,10 @@ bpdm-cleaning-service-dummy:
             client-secret:  <path:bpdm/data/dev/pool/admin-user#client-secret>
 
 postgres:
+  fullnameOverride: ""
   auth:
     postgresPassword: <path:bpdm/data/dev/pool/postgresql#postgres-password>
     password: <path:bpdm/data/dev/pool/postgresql#password>
+
+keycloak:
+  enabled: false
