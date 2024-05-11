@@ -17,16 +17,16 @@ iatp:
       token_url: "https://bpnl00000007rf54-bpdm--golden--record.authentication.eu10.hana.ondemand.com/oauth/token"
       client:
         id: "sb-0d52b7f2-e7d0-4577-9647-f5132921e452!b459174|ica-production-dim-prod-eu10-004-prod-dis-cloud-approuter!b174292"
-        secret_alias: "dev/edc/gate/CLIENT_SECRET"
+        secret_alias: "int/edc/bpdm/client-secret"
 
 controlplane:
   env:
-    EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: did:web:dim-static-prod.dis-cloud-prod.cfapps.eu10-004.hana.ondemand.com:dim-hosted:2f45795c-d6cc-4038-96c9-63cedc0cd266:holder-iatp
+    EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: 'did:web:dim-static-prod.dis-cloud-prod.cfapps.eu10-004.hana.ondemand.com:dim-hosted:2f45795c-d6cc-4038-96c9-63cedc0cd266:holder-iatp'
   endpoints:
     # -- data management api, used by internal users, can be added to an ingress and must not be internet facing
     management:
       # -- authentication key, must be attached to each 'X-Api-Key' request header
-      authKey: <path:bpdm/data/dev/edc/gate#controlplane-auth>
+      authKey: <path:bpdm/data/int/edc/bpdm/controlplane-auth#content>
   bdrs:
     server:
       url: "https://bpn-did-resolution-service.int.demo.catena-x.net/api/directory"
@@ -35,7 +35,7 @@ controlplane:
     ## Public / Internet facing Ingress
     - enabled: true
       # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-      hostname: "gate-edc.int.demo.catena-x.net"
+      hostname: "bpdm-edc.int.demo.catena-x.net"
       className: "nginx"
       # -- EDC endpoints exposed by this ingress resource
       endpoints:
@@ -51,13 +51,16 @@ controlplane:
 
 dataplane:
   env:
-    EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: did:web:dim-static-prod.dis-cloud-prod.cfapps.eu10-004.hana.ondemand.com:dim-hosted:2f45795c-d6cc-4038-96c9-63cedc0cd266:holder-iatp
+    EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: 'did:web:dim-static-prod.dis-cloud-prod.cfapps.eu10-004.hana.ondemand.com:dim-hosted:2f45795c-d6cc-4038-96c9-63cedc0cd266:holder-iatp'
+  endpoints:
+    proxy:
+      authKey: <path:bpdm/data/int/edc/bpdm/controlplane-auth#content>
   ## Ingress declaration to expose the network service.
   ingresses:
     ## Public / Internet facing Ingress
     - enabled: true
       # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-      hostname: "gate-edc.int.demo.catena-x.net"
+      hostname: "bpdm-edc.int.demo.catena-x.net"
       # -- EDC endpoints exposed by this ingress resource
       endpoints:
         - public
@@ -71,28 +74,28 @@ dataplane:
         secretName: tls-secret
   token:
     signer:
-      privatekey_alias: "dev/edc/gate/DAPS_PRIVATE_KEY"
+      privatekey_alias: "int/edc/bpdm/dataplane-private-key"
     verifier:
-      publickey_alias: "dev/edc/gate/DAPS_PUBLIC_KEY"
+      publickey_alias: "int/edc/bpdm/dataplane-public-key"
 
 postgresql:
-  jdbcUrl: "jdbc:postgresql://edc-gate-postgres:5432/edc"
-  fullnameOverride: "edc-gate-postgres"
+  jdbcUrl: "jdbc:postgresql://edc-bpdm-postgres:5432/edc"
+  fullnameOverride: "edc-bpdm-postgres"
   primary:
     persistence:
       enabled: true
   auth:
     database: "edc"
     username: "user"
-    password: <path:bpdm/data/dev/edc/gate#controlplane-auth>
+    password: <path:bpdm/data/int/edc/bpdm/postgres-password#content>
 
 vault:
   hashicorp:
     url: "https://vault.demo.catena-x.net"
-    token: <path:bpdm/data/dev/edc/gate#vault-token>
+    token: <path:bpdm/data/int/edc/bpdm/vault-token#content>
     paths:
       secret: /v1/bpdm
   secretNames:
-    transferProxyTokenEncryptionAesKey: dev/edc/gate/DATA_ENCRYPTION_KEYS_ALIAS
-    transferProxyTokenSignerPrivateKey: dev/edc/gate/DAPS_PRIVATE_KEY
-    transferProxyTokenSignerPublicKey: dev/edc/gate/DAPS_PUBLIC_KEY
+    transferProxyTokenSignerPrivateKey: int/edc/bpdm/dataplane-private-key
+    transferProxyTokenSignerPublicKey: int/edc/bpdm/dataplane-public-key
+    transferProxyTokenEncryptionAesKey: int/edc/bpdm/aes-key
