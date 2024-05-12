@@ -1,0 +1,91 @@
+bpdm-gate:
+  enabled: true
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 800m
+      memory: 2Gi
+    requests:
+      cpu: 300m
+      memory: 2Gi
+  ingress:
+    enabled: true
+    hosts:
+      - host: business-partners.int.demo.catena-x.net
+        paths:
+          - path: "/companies/sharing-member"
+            pathType: Prefix
+    tls:
+      - secretName: tls-secret
+        hosts:
+          - business-partners.int.demo.catena-x.net
+  livenessProbe:
+    httpGet:
+      path: "/companies/sharing-member/actuator/health/liveness"
+  readinessProbe:
+    httpGet:
+      path: "/companies/sharing-member/actuator/health/readiness"
+  startupProbe:
+    httpGet:
+      path: "/companies/sharing-member/actuator/health/readiness"
+  applicationConfig:
+    server:
+      servlet:
+        context-path: "/companies/sharing-member"
+    bpdm:
+      bpn:
+        owner-bpn-l: BPNL00000007RWSM
+      client:
+        orchestrator:
+          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          provider:
+            issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
+          registration:
+            client-id: sa-cl7-cx-7
+        pool:
+          base-url: "http://bpdm-int-pool:8080/pool"
+          provider:
+            issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
+          registration:
+            client-id: sa-cl7-cx-7
+      security:
+        auth-server-url: http://keycloak-bpdm.int.demo.catena-x.net
+        realm: CX-Central
+    springdoc:
+      swagger-ui:
+        oauth:
+          client-id: Cl2-CX-Portal
+  applicationSecrets:
+    spring:
+      datasource:
+        password: <path:bpdm/data/int/pool/postgresql#password>
+    bpdm:
+      client:
+        pool:
+          registration:
+            client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+        orchestrator:
+          registration:
+            client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+
+  postgres:
+    enabled: false
+    fullnameOverride: ""
+
+bpdm-pool:
+  enabled: false
+
+bpdm-orchestrator:
+  enabled: false
+
+bpdm-cleaning-service-dummy:
+  enabled: false
+
+postgres:
+  fullnameOverride: ""
+  auth:
+    postgresPassword: <path:bpdm/data/int/pool/postgresql#postgres-password>
+    password: <path:bpdm/data/int/pool/postgresql#password>
+
+keycloak:
+  enabled: false
