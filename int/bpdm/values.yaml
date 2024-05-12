@@ -9,10 +9,6 @@ bpdm-gate:
     requests:
       cpu: 300m
       memory: 2Gi
-  springProfiles:
-    - auth
-    - pool-auth
-    - orchestrator-auth
   ingress:
     enabled: true
     hosts:
@@ -43,34 +39,20 @@ bpdm-gate:
       tasks:
         creation:
           fromSharingMember:
-            cron: '*/30 * * * * *'
-          fromPool:
-            cron: '*/30 * * * * *'
-        check:
-          cron: '*/30 * * * * *'
+            starts-as-ready: false
       client:
         orchestrator:
           base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          registration:
+            client-id: sa-cl7-cx-7
         pool:
           base-url: "http://bpdm-int-pool:8080/pool"
+          registration:
+            client-id: sa-cl7-cx-7
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl16-CX-BPDMGate
-        permissions:
-          readInput: view_company_data
-          writeInput: update_company_data
-          readOutput: view_shared_data
-          writeOutput: update_company_data
-    spring:
-      security:
-        oauth2:
-          client:
-            registration:
-              pool-client:
-                client-id: sa-cl7-cx-7
-              orchestrator-client:
-                client-id: sa-cl7-cx-7
     springdoc:
       swagger-ui:
         oauth:
@@ -79,24 +61,22 @@ bpdm-gate:
     spring:
       datasource:
         password: <path:bpdm/data/int/pool/postgresql#password>
-      security:
-        oauth2:
-          client:
-            registration:
-              pool-client:
-                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
-              orchestrator-client:
-                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+    bpdm:
+      client:
+        pool:
+          registration:
+            client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+        orchestrator:
+          registration:
+            client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
 
   postgres:
     enabled: false
+    fullnameOverride: ""
 
 bpdm-pool:
   fullnameOverride: bpdm-int-pool
   enabled: true
-  springProfiles:
-    - auth
-    - orchestrator-auth
   resources:
     limits:
       cpu: 800m
@@ -132,123 +112,35 @@ bpdm-pool:
       servlet:
         context-path: "/pool"
     bpdm:
-      tasks:
-        cron: "*/30 * * * * *"
       client:
         orchestrator:
           base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          registration:
+            client-id: sa-cl7-cx-7
       security:
         auth-server-url: https://centralidp.int.demo.catena-x.net/auth
         realm: CX-Central
         client-id: Cl7-CX-BPDM
-        permissions:
-          readPartner: view_company_data
-          writePartner: add_company_data
-          readMetaData: view_company_data
-          writeMetaData: add_company_data
     springdoc:
       swagger-ui:
         oauth:
           client-id: Cl2-CX-Portal
-    spring:
-      security:
-        oauth2:
-          client:
-            provider:
-            registration:
-              orchestrator-client:
-                client-id: sa-cl7-cx-7
   applicationSecrets:
     spring:
       datasource:
         password: <path:bpdm/data/int/pool/postgresql#password>
-      security:
-        oauth2:
-          client:
-            provider:
-            registration:
-              orchestrator-client:
-                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
-
-bpdm-bridge-dummy:
-  fullnameOverride: bpdm-int-bridge
-  springProfiles:
-    - auth
-    - gate-auth
-    - pool-auth
-  ingress:
-    enabled: true
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    hosts:
-      - host: business-partners.int.demo.catena-x.net
-        paths:
-          - path: /bridge
-            pathType: Prefix
-    tls:
-      - secretName: tls-secret
-        hosts:
-          - business-partners.int.demo.catena-x.net
-  livenessProbe:
-    httpGet:
-      path: "/bridge/actuator/health/liveness"
-  readinessProbe:
-    httpGet:
-      path: "/bridge/actuator/health/readiness"
-  startupProbe:
-    httpGet:
-      path: "/bridge/actuator/health/readiness"
-  resources:
-    limits:
-      cpu: 800m
-      memory: 2Gi
-    requests:
-      cpu: 300m
-      memory: 2Gi
-  applicationConfig:
-    server:
-      servlet:
-        context-path: "/bridge"
     bpdm:
       client:
-        pool:
-          base-url: "http://bpdm-int-pool:8080/pool"
-        gate:
-          base-url: "http://bpdm-int-gate-test-company:8080/companies/test-company"
-      security:
-        auth-server-url: https://centralidp.int.demo.catena-x.net/auth
-        realm: CX-Central
-        client-id: Cl7-CX-BPDM
-        permissions:
-          sync: add_company_data
-    spring:
-      security:
-        oauth2:
-          client:
-            registration:
-              pool-client:
-                client-id: sa-cl7-cx-7
-              gate-client:
-                client-id: sa-cl7-cx-7
-  applicationSecrets:
-    spring:
-      datasource:
-        password: <path:bpdm/data/int/pool/postgresql#password>
-      security:
-        oauth2:
-          client:
-            registration:
-              gate-client:
-                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
-              pool-client:
-                client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+        orchestrator:
+          registration:
+            client-secret: <path:bpdm/data/int/pool/admin-user#client-secret>
+  postgres:
+    enabled: false
+    fullnameOverride: ""
 
 bpdm-orchestrator:
   fullnameOverride: bpdm-int-orchestrator
   enabled: true
-  springProfiles:
-    - auth
   replicaCount: 1
   resources:
     limits:
@@ -257,6 +149,20 @@ bpdm-orchestrator:
     requests:
       cpu: 300m
       memory: 2Gi
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    hosts:
+      - host: business-partners.int.demo.catena-x.net
+        paths:
+          - path: /orchestrator
+            pathType: Prefix
+    tls:
+      - secretName: tls-secret
+        hosts:
+          - business-partners.int.demo.catena-x.net
   livenessProbe:
     httpGet:
       path: "orchestrator/actuator/health/liveness"
@@ -276,17 +182,19 @@ bpdm-orchestrator:
         realm: CX-Central
         client-id: Cl7-CX-BPDM
         permissions:
-          createTask: add_company_data
-          viewTask: view_company_data
-          processTask:
-            clean: add_company_data
-            cleanAndSync: add_company_data
-            poolSync: add_company_data
+          createTask: write_partner
+          readTask: write_partner
+          reservation:
+            clean: write_partner
+            cleanAndSync: write_partner
+            poolSync: write_partner
+          result:
+            clean: write_partner
+            cleanAndSync: write_partner
+            poolSync: write_partner
 
 bpdm-cleaning-service-dummy:
   fullnameOverride: bpdm-int-cleaning-service
-  springProfiles:
-    - orchestrator-auth
   enabled: true
   replicaCount: 1
   resources:
@@ -301,29 +209,32 @@ bpdm-cleaning-service-dummy:
       client:
         orchestrator:
           base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
-      cleaningService:
-        pollingCron: "*/30 * * * * *"
-    spring:
-      security:
-        oauth2:
-          client:
-            provider:
-              orchestrator-oauth2-provider:
-                issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
-            registration:
-              orchestrator-client:
-                client-id: sa-cl7-cx-7
+          provider:
+            issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
+          registration:
+            client-id: sa-cl7-cx-7
   applicationSecrets:
-    spring:
-      security:
-        oauth2:
-          client:
-            registration:
-              orchestrator-client:
-                client-secret:  <path:bpdm/data/int/pool/admin-user#client-secret>
-
+    bpdm:
+      client:
+        orchestrator:
+          registration:
+            client-secret:  <path:bpdm/data/int/pool/admin-user#client-secret>
 
 postgres:
+  fullnameOverride: ""
   auth:
     postgresPassword: <path:bpdm/data/int/pool/postgresql#postgres-password>
     password: <path:bpdm/data/int/pool/postgresql#password>
+
+keycloak:
+  enabled: true
+  postgresql:
+    enabled: true
+    nameOverride: "keycloak-postgres"
+  auth:
+    adminPassword: <path:bpdm/data/int/pool/postgresql#password>
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    hostname: "keycloak-bpdm.int.demo.catena-x.net"
+    servicePort: http
