@@ -79,6 +79,7 @@ bpdm-gate:
 
   postgres:
     enabled: false
+    fullnameOverride: ""
 
 bpdm-pool:
   image:
@@ -152,6 +153,9 @@ bpdm-pool:
         orchestrator:
           registration:
             client-secret: <path:bpdm/data/dev/pool/admin-user#client-secret>
+  postgres:
+    enabled: false
+    fullnameOverride: ""
 
 bpdm-orchestrator:
   image:
