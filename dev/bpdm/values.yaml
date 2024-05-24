@@ -1,6 +1,7 @@
 bpdm-gate:
   image:
     tag: "main"
+    pullPolicy: Always
   fullnameOverride: bpdm-dev-gate-test-company
   enabled: true
   replicaCount: 1
@@ -40,11 +41,11 @@ bpdm-gate:
         owner-bpn-l:
       client:
         orchestrator:
-          base-url: "http://bpdm-dev-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-dev-orchestrator/orchestrator"
           registration:
             client-id: sa-cl7-cx-7
         pool:
-          base-url: "http://bpdm-dev-pool:8080/pool"
+          base-url: "http://bpdm-dev-pool/pool"
           registration:
             client-id: sa-cl7-cx-7
       security:
@@ -84,6 +85,7 @@ bpdm-gate:
 bpdm-pool:
   image:
     tag: "main"
+    pullPolicy: Always
   fullnameOverride: bpdm-dev-pool
   enabled: true
   resources:
@@ -125,7 +127,7 @@ bpdm-pool:
         cron: "*/30 * * * * *"
       client:
         orchestrator:
-          base-url: "http://bpdm-dev-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-dev-orchestrator/orchestrator"
           registration:
             client-id: sa-cl7-cx-7
       security:
@@ -160,6 +162,7 @@ bpdm-pool:
 bpdm-orchestrator:
   image:
     tag: "main"
+    pullPolicy: Always
   fullnameOverride: bpdm-dev-orchestrator
   enabled: true
   replicaCount: 1
@@ -217,6 +220,7 @@ bpdm-orchestrator:
 bpdm-cleaning-service-dummy:
   image:
     tag: "main"
+    pullPolicy: Always
   fullnameOverride: bpdm-dev-cleaning-service
   enabled: true
   replicaCount: 1
@@ -231,7 +235,7 @@ bpdm-cleaning-service-dummy:
     bpdm:
       client:
         orchestrator:
-          base-url: "http://bpdm-dev-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-dev-orchestrator/orchestrator"
           provider:
             issuer-uri: https://centralidp.dev.demo.catena-x.net/auth/realms/CX-Central
           registration:
@@ -256,6 +260,11 @@ keycloak:
   postgresql:
     enabled: true
     nameOverride: "keycloak-postgres"
+    auth:
+      postgresPassword: <path:bpdm/data/dev/keycloak#postgresql-password>
+      username: bn_keycloak
+      password: <path:bpdm/data/dev/keycloak#user-password>
+      database: bitnami_keycloak
   auth:
     adminPassword: <path:bpdm/data/dev/pool/postgresql#password>
   ingress:
