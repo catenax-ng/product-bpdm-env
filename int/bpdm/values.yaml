@@ -42,11 +42,11 @@ bpdm-gate:
             starts-as-ready: false
       client:
         orchestrator:
-          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-int-orchestrator/orchestrator"
           registration:
             client-id: sa-cl7-cx-7
         pool:
-          base-url: "http://bpdm-int-pool:8080/pool"
+          base-url: "http://bpdm-int-pool/pool"
           registration:
             client-id: sa-cl7-cx-7
       security:
@@ -114,7 +114,7 @@ bpdm-pool:
     bpdm:
       client:
         orchestrator:
-          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-int-orchestrator/orchestrator"
           registration:
             client-id: sa-cl7-cx-7
       security:
@@ -208,7 +208,7 @@ bpdm-cleaning-service-dummy:
     bpdm:
       client:
         orchestrator:
-          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-int-orchestrator/orchestrator"
           provider:
             issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
           registration:
@@ -231,6 +231,11 @@ keycloak:
   postgresql:
     enabled: true
     nameOverride: "keycloak-postgres"
+    auth:
+      postgresPassword: <path:bpdm/data/int/keycloak#postgresql-password>
+      username: bn_keycloak
+      password: <path:bpdm/data/int/keycloak#user-password>
+      database: bitnami_keycloak
   auth:
     adminPassword: <path:bpdm/data/int/pool/postgresql#password>
   ingress:
