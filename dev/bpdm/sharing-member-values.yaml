@@ -1,6 +1,7 @@
 bpdm-gate:
   image:
     tag: "main"
+    pullPolicy: Always
   enabled: true
   replicaCount: 1
   resources:
