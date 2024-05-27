@@ -37,13 +37,13 @@ bpdm-gate:
         owner-bpn-l: BPNL00000007RWSM
       client:
         orchestrator:
-          base-url: "http://bpdm-int-orchestrator:8080/orchestrator"
+          base-url: "http://bpdm-int-orchestrator/orchestrator"
           provider:
             issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
           registration:
             client-id: sa-cl7-cx-7
         pool:
-          base-url: "http://bpdm-int-pool:8080/pool"
+          base-url: "http://bpdm-int-pool/pool"
           provider:
             issuer-uri: https://centralidp.int.demo.catena-x.net/auth/realms/CX-Central
           registration:
